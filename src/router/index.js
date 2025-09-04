@@ -1,20 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import TodoListView from '@/views/TodoListView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
   routes: [
     {
       path: '/',
       redirect: '/login',
-    },
-    {
-      path: '/todolist',
-      name: 'todolist',
-      component: TodoListView,
-      meta: { requiresAuth: true },
     },
     {
       path: '/login',
@@ -26,10 +20,19 @@ const router = createRouter({
       name: 'register',
       component: RegisterView,
     },
+    {
+      path: '/todolist',
+      name: 'todolist',
+      component: TodoListView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/login',
+    },
   ],
 })
 
-// 路由守衛
 router.beforeEach((to, from, next) => {
   const token = document.cookie.replace(
     /(?:(?:^|.*;\s*)vue3-todolist-token\s*=\s*([^;]*).*$)|^.*$/,
@@ -37,11 +40,11 @@ router.beforeEach((to, from, next) => {
   )
 
   if (to.meta.requiresAuth && !token) {
-    next('/login') // 未登入導向 login
+    next('/login')
   } else if ((to.path === '/login' || to.path === '/register') && token) {
-    next('/todolist') // 已登入直接去 todoList
+    next('/todolist')
   } else {
-    next() // 通過
+    next()
   }
 })
 
